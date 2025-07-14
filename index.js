@@ -5,36 +5,88 @@ const express = require('express');
 // Wir instanziieren uns ein app-Objekt von express
 const app = express();
 
+// Nutze Middleware, damit Express den Body von JSON-POST-Request korrekt lesen kann
+app.use(express.json());
+
 todos = [
             { "id": 1, "title": "waschen", "completed": true, "date": "02.07.2025" },
             { "id": 2, "title": "putzen", "completed": false, "date": "03.07.2025" }
         ];
 
 // Erste Route auf Wurzel /
-app.get('/', (request, response) => {
-    response.send('<h1>Das ist meine erste Route in Express</h1>');
+app.get('/', (request, res) => {
+    res.send('<h1>Das ist meine erste Route in Express</h1>');
 });
 
 // Route auf /about
-app.get('/about', (request, response) => {
-    response.send('Das ist die Über uns Seite');
+app.get('/about', (req, res) => {
+    res.send('Das ist die Über uns Seite');
 });
 
 
 // GET-Route - Alle Todos abrufen
-app.get('/todos', (request, response) => {
-    response.status(200).json(todos); 
+app.get('/todos', (req, res) => {
+    res.status(200).json(todos); 
 });
 
 // GET-Route - Einzelnes Todo abrufen
-app.get('/todos/:id' , (request, response) => {
-    const id = parseInt(request.params.id);
+app.get('/todos/:id' , (req, res) => {
+    // Konvertiere die übergebene ID als URL Parameter in einen Integer
+    // und speichere das in eine Konstante id
+    const id = parseInt(req.params.id);
+    // Suche in dem todos-Array nach dem Objekt, das denselben Wert für die id hat
+    // wie die übergebene id in den URL-Parametern
     const todo = todos.find(t => t.id === id);
-    console.log(todo);
+    // console.log(todo);
+    // Early-Return: Sobald das todo nicht gefunden werden konnte
+    // Schmeiß einen Fehler mit Statuscode 404 zurück
     if (!todo){
-        return response.status(404).json({"error": "Todo nicht gefunden"});
+        return res.status(404).json({error: "Todo nicht gefunden"});
     };
-    response.status(200).json(todo);
+    // Falls todo gefunden werden konnte, gib Code 200 zurück, sowie das gefundene Objekt im JSON-Format
+    res.status(200).json(todo);
+})
+
+// POST-Route - neues Todo erstellen
+app.post('/todos', (req, res) => {
+    // Hier wollen wir den Title, der im Body im JSON-Format verschickt wird, speichern in eine Konstante
+    const { title } = req.body;
+    // Early Return für Titel ist leer
+    if (!title){
+        return res.status(400).json({error: "Titel ist erforderlich"})
+    }
+    // NewTodo müssen wir konstruieren als neues Objekt
+    // console.log(todos[todos.length - 1]);
+    const newTodo = {
+        id: todos[todos.length - 1].id + 1,
+        title: title,
+        completed: false,
+        date: new Date().toISOString()
+    }
+    // console.log(newTodo);
+    // Hier fügen wir das neue Todo dem Array hinzu
+    todos.push(newTodo);
+    res.status(201).json(newTodo);
+})
+
+
+// DELETE - Ein Todo entfernen
+app.delete('/todos/:id', (req,res) => {
+    // Hole dir die ID aus den URL Parametern und caste sie in einen Integer
+    const id = parseInt(req.params.id);
+    // Finde den Index von dem Element, wo die Bedingung wahr ist
+    const todoIndex = todos.findIndex(t => t.id === id);
+    // Falls nicht gefunden, schmeiße einen Fehler
+    // Wir überprüfen auf -1, da findIndex -1 zurückgibt wenn nicht gefunden
+    if (todoIndex === -1){
+        return res.status(404).json({error: "Todo nicht gefunden"});
+    };
+    // Lösche aus dem todos-Array, das Element an dem Index todoIndex
+    todos.splice(todoIndex, 1);
+    res.status(200).json({ message: "Todo wurde gelöscht"});
+    // Alternative: nur 204 als Statuscode ohne Message zurückgeben
+    // res.status(204).send();
+
 })
 
 
