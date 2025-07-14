@@ -36,6 +36,12 @@ app.use(
 // Nutze Middleware, damit Express den Body von JSON-POST-Request korrekt lesen kann
 app.use(express.json());
 
+// Middleware für das Logging
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url} mit ${res.statusCode}`);
+    next();
+})
+
 todos = [
             { "id": 1, "title": "waschen", "completed": true, "date": "02.07.2025" },
             { "id": 2, "title": "putzen", "completed": false, "date": "03.07.2025" }
