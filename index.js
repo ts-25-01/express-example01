@@ -89,6 +89,23 @@ app.delete('/todos/:id', (req,res) => {
 
 })
 
+// PUT-Route - Todo aktualisieren
+app.put('/todos/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const todo = todos.find(t => t.id === id);
+    if (!todo){
+        return res.status(404).json({error: "Todo nicht gefunden"});
+    };
+    const { title, completed } = req.body;
+    if (title !== undefined){
+        todo.title = title;
+    }
+    if (completed !== undefined){
+        todo.completed = completed;
+    }
+
+    res.status(200).json(todo);
+})
 
 // ... weitere Routen hier rein
 
