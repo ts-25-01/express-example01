@@ -6,8 +6,8 @@ const express = require('express');
 const app = express();
 
 todos = [
-            { "title": "waschen", "completed": true, "date": "02.07.2025" },
-            { "title": "putzen", "completed": false, "date": "03.07.2025" }
+            { "id": 1, "title": "waschen", "completed": true, "date": "02.07.2025" },
+            { "id": 2, "title": "putzen", "completed": false, "date": "03.07.2025" }
         ];
 
 // Erste Route auf Wurzel /
@@ -21,10 +21,21 @@ app.get('/about', (request, response) => {
 });
 
 
-// Route auf /about
+// GET-Route - Alle Todos abrufen
 app.get('/todos', (request, response) => {
-    response.json(todos); 
+    response.status(200).json(todos); 
 });
+
+// GET-Route - Einzelnes Todo abrufen
+app.get('/todos/:id' , (request, response) => {
+    const id = parseInt(request.params.id);
+    const todo = todos.find(t => t.id === id);
+    console.log(todo);
+    if (!todo){
+        return response.status(404).json({"error": "Todo nicht gefunden"});
+    };
+    response.status(200).json(todo);
+})
 
 
 // ... weitere Routen hier rein
