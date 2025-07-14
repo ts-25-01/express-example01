@@ -1,9 +1,37 @@
 // Wir importieren uns die Abhängigkeit express
 // in python war das: import ... from ...
 const express = require('express');
+const bodyParser = require("body-parser");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
+const options = {
+    definition: {
+        openapi: "3.1.0",
+        info: {
+            title: "Todo Express App",
+            version: "1.0.0",
+            description: "This is a first example of a Todo Express App with local storage"
+        },
+    //     servers: [
+    //   {
+    //     url: "http://localhost:3000",
+    //   },
+    // ],
+    },
+    apis: [__filename]
+}
+
+const specs = swaggerJsdoc(options);
 // Wir instanziieren uns ein app-Objekt von express
 const app = express();
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs)
+);
+
 
 // Nutze Middleware, damit Express den Body von JSON-POST-Request korrekt lesen kann
 app.use(express.json());
@@ -14,7 +42,7 @@ todos = [
         ];
 
 // Erste Route auf Wurzel /
-app.get('/', (request, res) => {
+app.get('/', (req, res) => {
     res.send('<h1>Das ist meine erste Route in Express</h1>');
 });
 
@@ -113,3 +141,165 @@ app.put('/todos/:id', (req, res) => {
 app.listen(3000, () => {
     console.log("Server läuft auf http://localhost:3000");
 })
+
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Todo:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         title:
+ *           type: string
+ *           example: waschen
+ *         completed:
+ *           type: boolean
+ *           example: true
+ *         date:
+ *           type: string
+ *           format: date
+ *           example: "02.07.2025"
+ */
+
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Startseite
+ *     responses:
+ *       200:
+ *         description: Gibt die Startseite zurück
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
+
+/**
+ * @swagger
+ * /about:
+ *   get:
+ *     summary: Über uns Seite
+ *     responses:
+ *       200:
+ *         description: Gibt die Über uns Seite zurück
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
+
+/**
+ * @swagger
+ * /todos:
+ *   get:
+ *     summary: Gibt alle Todos zurück
+ *     responses:
+ *       200:
+ *         description: Eine Liste aller Todos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Todo'
+ *   post:
+ *     summary: Erstellt ein neues Todo
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "einkaufen"
+ *     responses:
+ *       201:
+ *         description: Das erstellte Todo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Todo'
+ *       400:
+ *         description: Titel ist erforderlich
+ */
+
+/**
+ * @swagger
+ * /todos/{id}:
+ *   get:
+ *     summary: Gibt ein einzelnes Todo anhand der ID zurück
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Die ID des Todos
+ *     responses:
+ *       200:
+ *         description: Gefundenes Todo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Todo'
+ *       404:
+ *         description: Todo nicht gefunden
+ *   put:
+ *     summary: Aktualisiert ein Todo anhand der ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Die ID des Todos
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               completed:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Aktualisiertes Todo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Todo'
+ *       404:
+ *         description: Todo nicht gefunden
+ *   delete:
+ *     summary: Löscht ein Todo anhand der ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Die ID des Todos
+ *     responses:
+ *       200:
+ *         description: Todo wurde gelöscht
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Todo wurde gelöscht"
+ *       404:
+ *         description: Todo nicht gefunden
+ */
