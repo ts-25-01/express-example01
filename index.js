@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+// morgan als logging middleware importieren
+const morgan = require('morgan');
 
 const options = {
     definition: {
@@ -37,10 +39,13 @@ app.use(
 app.use(express.json());
 
 // Middleware für das Logging
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url} mit ${res.statusCode}`);
-    next();
-})
+// app.use((req, res, next) => {
+//     console.log(`${req.method} ${req.url} mit ${res.statusCode}`);
+//     next();
+// })
+
+// morgan Middleware zum Loggen
+app.use(morgan('dev'));
 
 todos = [
             { "id": 1, "title": "waschen", "completed": true, "date": "02.07.2025" },
