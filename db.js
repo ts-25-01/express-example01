@@ -32,4 +32,6 @@ async function testConnection(){
     }
 }
 
-testConnection();
+// testConnection();
+
+module.exports = { createConnectionToDB };

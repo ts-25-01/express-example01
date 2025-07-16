@@ -6,6 +6,7 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 // morgan als logging middleware importieren
 const morgan = require('morgan');
+const { createConnectionToDB } = require('./db.js');
 
 const options = {
     definition: {
@@ -64,8 +65,16 @@ app.get('/about', (_req, res) => {
 
 
 // GET-Route - Alle Todos abrufen
-app.get('/todos', (_req, res) => {
-    res.status(200).json(todos); 
+app.get('/todos', async (_req, res) => {
+    try {
+        const connection = await createConnectionToDB();
+        const [rows] = await connection.execute('SELECT * FROM todos;');
+        await connection.end();
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error("Fehler beim Laden der Todos", error);
+        res.status(500).json({error: 'Fehler beim Laden der Todos'});
+    }
 });
 
 // GET-Route - Einzelnes Todo abrufen
