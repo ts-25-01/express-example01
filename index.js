@@ -53,18 +53,18 @@ todos = [
         ];
 
 // Erste Route auf Wurzel /
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.send('<h1>Das ist meine erste Route in Express</h1>');
 });
 
 // Route auf /about
-app.get('/about', (req, res) => {
+app.get('/about', (_req, res) => {
     res.send('Das ist die Über uns Seite');
 });
 
 
 // GET-Route - Alle Todos abrufen
-app.get('/todos', (req, res) => {
+app.get('/todos', (_req, res) => {
     res.status(200).json(todos); 
 });
 
