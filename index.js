@@ -78,21 +78,33 @@ app.get('/todos', async (_req, res) => {
 });
 
 // GET-Route - Einzelnes Todo abrufen
-app.get('/todos/:id' , (req, res) => {
-    // Konvertiere die übergebene ID als URL Parameter in einen Integer
-    // und speichere das in eine Konstante id
-    const id = parseInt(req.params.id);
-    // Suche in dem todos-Array nach dem Objekt, das denselben Wert für die id hat
-    // wie die übergebene id in den URL-Parametern
-    const todo = todos.find(t => t.id === id);
-    // console.log(todo);
-    // Early-Return: Sobald das todo nicht gefunden werden konnte
-    // Schmeiß einen Fehler mit Statuscode 404 zurück
-    if (!todo){
-        return res.status(404).json({error: "Todo nicht gefunden"});
-    };
-    // Falls todo gefunden werden konnte, gib Code 200 zurück, sowie das gefundene Objekt im JSON-Format
-    res.status(200).json(todo);
+app.get('/todos/:id' , async (req, res) => {
+    try {
+        // Konvertiere die übergebene ID als URL Parameter in einen Integer
+        // und speichere das in eine Konstante id
+        const id = parseInt(req.params.id);
+        if (isNaN(id)){
+            console.error("Bitte übergib eine Zahl als id");
+            return res.status(400).json({error: "Ungültige ID"});
+        };
+        // Verbindung zur Datenbank herstellen
+        const connection = await createConnectionToDB();
+        // Frage die todos-Tabelle ab, filtere dabei nach der id
+        const [rows] = await connection.execute('SELECT * FROM todos WHERE id = ?', [id]);
+        // Beende die Verbindung
+        await connection.end();
+        // Early-Return: Sobald das todo nicht gefunden werden konnte, d.h. wenn die rows nur 0 lang sind
+        // Schmeiß einen Fehler mit Statuscode 404 zurück
+        // console.log(rows);
+        if (rows.length === 0){
+            return res.status(404).json({error: "Todo nicht gefunden"});
+        };
+        // Schicke dir das gefundene Objekt zurück
+        res.status(200).json(rows[0]);
+    } catch (error) {
+        console.error("Fehler beim Laden der Todos", error);
+        res.status(500).json({error: 'Fehler beim Laden der Todos'});
+    }
 })
 
 // POST-Route - neues Todo erstellen
